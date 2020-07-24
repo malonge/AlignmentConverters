@@ -30,8 +30,12 @@ class Alignment:
         self.parsed_cigar = [(int(i[0]), i[1]) for i in list(re.findall(re_cg, self.cigar))]
 
 
-def write_delta(in_alns, in_r_lens, in_q_lens):
-    print('file1 file2')
+def write_delta(in_alns, in_r_lens, in_q_lens, ref_file, query_file):
+    if not ref_file:
+        ref_file = "file1"
+    if not query_file:
+        query_file = "file2"
+    print(ref_file + " " + query_file)
     print('NUCMER')
 
     # Iterate over each reference-query header pair
@@ -82,9 +86,13 @@ def write_delta(in_alns, in_r_lens, in_q_lens):
 def paf2delta():
     parser = argparse.ArgumentParser(description="Convert a PAF file to a Nucmer delta file.\nPAF file lines must have CIGAR strings ('-c' when using Minimap2)")
     parser.add_argument("paf_file", metavar="<with-cg.paf>", type=str, help="PAF file to convert (gzip allowed).")
+    parser.add_argument("-r", default="", metavar="PATH", type=str, help="PATH to there reference fasta file")
+    parser.add_argument("-q", default="", metavar="PATH", type=str, help="PATH to there query fasta file")
 
     args = parser.parse_args()
     paf_file = args.paf_file
+    ref_file = args.r
+    query_file = args.q
     alns = dict()
 
     # Dictionaries to store reference and query sequence lengths
@@ -144,7 +152,7 @@ def paf2delta():
         alns[r_header][q_header].append(x)
     f.close()
 
-    write_delta(alns, r_chr_lens, q_chr_lens)
+    write_delta(alns, r_chr_lens, q_chr_lens, ref_file, query_file)
 
 
 if __name__ == "__main__":
